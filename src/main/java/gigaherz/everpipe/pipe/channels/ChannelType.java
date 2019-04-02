@@ -1,9 +1,8 @@
 package gigaherz.everpipe.pipe.channels;
 
-public enum ChannelType
-{
-    Items,
-    Fluids,
-    Power,
-    Data;
+public enum ChannelType {
+    DATA,
+    FLUID,
+    ITEM,
+    POWER;
 }

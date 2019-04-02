@@ -19,11 +19,9 @@ import net.minecraftforge.fml.relauncher.Side;
 import static gigaherz.common.client.ModelHelpers.registerBlockModelAsItem;
 
 @Mod.EventBusSubscriber(Side.CLIENT)
-public class ClientProxy implements IModProxy
-{
+public class ClientProxy implements IModProxy {
     @SubscribeEvent
-    public static void registerModels(ModelRegistryEvent event)
-    {
+    public static void registerModels(ModelRegistryEvent event) {
         OBJLoader.INSTANCE.addDomain(Everpipe.MODID);
 
         ModelHandle.init();
@@ -35,15 +33,13 @@ public class ClientProxy implements IModProxy
     }
 
     @Override
-    public void handleUpdateField(final UpdateField message)
-    {
+    public void handleUpdateField(final UpdateField message) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             Minecraft gameController = Minecraft.getMinecraft();
 
             EntityPlayer entityplayer = gameController.player;
 
-            if (entityplayer.openContainer != null && entityplayer.openContainer.windowId == message.windowId)
-            {
+            if (entityplayer.openContainer != null && entityplayer.openContainer.windowId == message.windowId) {
                 ((ContainerBase) entityplayer.openContainer).updateFields(message.fields);
             }
         });

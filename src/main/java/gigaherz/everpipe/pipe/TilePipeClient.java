@@ -16,8 +16,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 
-public class TilePipeClient extends TileEntity
-{
+public class TilePipeClient extends TileEntity {
     private final Multimap<EnumFacing, ConnectorState> connectors = ArrayListMultimap.create();
 
     public ConnectorStateData getConnectors()
@@ -26,31 +25,31 @@ public class TilePipeClient extends TileEntity
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound)
-    {
-        super.readFromNBT(compound);
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
 
         connectors.clear();
-        NBTTagList list = compound.getTagList("Connectors", Constants.NBT.TAG_COMPOUND);
-        for (int i = 0; i < list.tagCount(); i++)
-        {
-            NBTTagCompound tag = list.getCompoundTagAt(i);
-            EnumFacing side = EnumFacing.byName(tag.getString("Side"));
+        NBTTagList list = tag.getTagList("Connectors", Constants.NBT.TAG_COMPOUND);
 
-            if (!tag.hasKey("Handler", Constants.NBT.TAG_STRING))
-            {
+        for (int i = 0; i < list.tagCount(); i++) {
+            NBTTagCompound currentTag = list.getCompoundTagAt(i);
+            EnumFacing side = EnumFacing.byName(currentTag.getString("Side"));
+
+            if (!currentTag.hasKey("Handler", Constants.NBT.TAG_STRING)) {
                 Everpipe.logger.warn("Ignored connector missing handler key.");
                 continue;
             }
-            ResourceLocation key = new ResourceLocation(tag.getString("Handler"));
+
+            ResourceLocation key = new ResourceLocation(currentTag.getString("Handler"));
             ConnectorHandler handler = ConnectorHandler.REGISTRY.getValue(key);
-            if (handler == null)
-            {
+
+            if (handler == null) {
                 Everpipe.logger.warn("Ignored unregistered connector handler: {0}", key);
                 continue;
             }
+
             ConnectorState conn = handler.createStateInstance();
-            conn.deserializeNBT(tag);
+            conn.deserializeNBT(currentTag);
             connectors.put(side, conn);
         }
     }
@@ -62,8 +61,7 @@ public class TilePipeClient extends TileEntity
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt)
-    {
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         handleUpdateTag(pkt.getNbtCompound());
 
         IBlockState state = world.getBlockState(pos);

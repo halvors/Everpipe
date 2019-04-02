@@ -17,6 +17,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -30,22 +31,19 @@ import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 @Mod(modid = Everpipe.MODID,
         version = Everpipe.VERSION)
-public class Everpipe
-{
+public class Everpipe {
     public static final String MODID = "everpipe";
     public static final String VERSION = "@VERSION@";
     public static final String CHANNEL = "everpipe";
 
     public static BlockRegistered pipe;
 
-    public static CreativeTabs tabEverpipe = new CreativeTabs("tab_everpipe")
-    {
+    public static CreativeTabs tabEverpipe = new CreativeTabs("tab_everpipe") {
         @Override
-        public ItemStack getTabIconItem()
-        {
+        public ItemStack createIcon() {
             return new ItemStack(pipe);
         }
     };
@@ -64,8 +62,7 @@ public class Everpipe
 
     public static final IForgeRegistry<ConnectorHandler> CONNECTOR_HANDLERS;
 
-    static
-    {
+    static {
         CONNECTOR_HANDLERS = new RegistryBuilder<ConnectorHandler>()
                 .setType(ConnectorHandler.class)
                 .setIDRange(0, 65535)
@@ -74,8 +71,7 @@ public class Everpipe
     }
 
     @SubscribeEvent
-    public static void registerBlocks(RegistryEvent.Register<Block> event)
-    {
+    public static void registerBlocks(RegistryEvent.Register<Block> event) {
         event.getRegistry().registerAll(
                 pipe = new BlockPipe("block_pipe")
         );
@@ -84,24 +80,21 @@ public class Everpipe
     }
 
     @SubscribeEvent
-    public static void registerItems(RegistryEvent.Register<Item> event)
-    {
+    public static void registerItems(RegistryEvent.Register<Item> event) {
         event.getRegistry().registerAll(
                 pipe.createItemBlock()
         );
     }
 
     @SubscribeEvent
-    public static void registerConnectors(RegistryEvent.Register<ConnectorHandler> event)
-    {
+    public static void registerConnectors(RegistryEvent.Register<ConnectorHandler> event) {
         event.getRegistry().registerAll(
                 new ItemHandlerConnector.Handler()
         );
     }
 
     @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event)
-    {
+    public void preInit(FMLPreInitializationEvent event) {
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
         ConfigValues.readConfig(config);
 
@@ -113,8 +106,7 @@ public class Everpipe
     }
 
     @Mod.EventHandler
-    public void init(FMLInitializationEvent event)
-    {
+    public void init(FMLInitializationEvent event) {
         // Recipes
         /*GameRegistry.addRecipe(new ItemStack(riftOrb),
                 "aba",

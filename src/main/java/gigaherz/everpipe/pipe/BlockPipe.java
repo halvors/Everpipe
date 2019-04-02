@@ -25,9 +25,8 @@ import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 
-public class BlockPipe extends BlockRegistered
-{
-    public static final AxisAlignedBB AABB = new AxisAlignedBB(2 / 16.0f, 2 / 16.0f, 2 / 16.0f, 14 / 16.0f, 14 / 16.0f, 14 / 16.0f);
+public class BlockPipe extends BlockRegistered {
+    public static final AxisAlignedBB AABB = new AxisAlignedBB(2 / 16.0F, 2 / 16.0F, 2 / 16.0F, 14 / 16.0F, 14 / 16.0F, 14 / 16.0F);
 
     public static final PropertyBool NORTH = PropertyBool.create("north");
     public static final PropertyBool SOUTH = PropertyBool.create("south");
@@ -36,8 +35,7 @@ public class BlockPipe extends BlockRegistered
     public static final PropertyBool UP = PropertyBool.create("up");
     public static final PropertyBool DOWN = PropertyBool.create("down");
 
-    public static final IUnlistedProperty<ConnectorStateData> CONNECTORS = new IUnlistedProperty<ConnectorStateData>()
-    {
+    public static final IUnlistedProperty<ConnectorStateData> CONNECTORS = new IUnlistedProperty<ConnectorStateData>() {
         public String getName()
         {
             return Everpipe.location("connectors_property").toString();
@@ -59,9 +57,9 @@ public class BlockPipe extends BlockRegistered
         }
     };
 
-    public BlockPipe(String name)
-    {
+    public BlockPipe(String name) {
         super(name, Material.IRON, MapColor.GRAY);
+
         setSoundType(SoundType.METAL);
         setCreativeTab(Everpipe.tabEverpipe);
         setDefaultState(blockState.getBaseState()
@@ -91,65 +89,76 @@ public class BlockPipe extends BlockRegistered
 
     @Deprecated
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
-    {
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
         double nx = AABB.minX;
         double ny = AABB.minY;
         double nz = AABB.minZ;
         double mx = AABB.maxX;
         double my = AABB.maxY;
         double mz = AABB.maxZ;
+
         state = getActualState(state, source, pos);
-        if (state.getValue(NORTH)) nz = 0;
-        if (state.getValue(SOUTH)) mz = 1;
-        if (state.getValue(WEST)) nx = 0;
-        if (state.getValue(EAST)) mx = 1;
-        if (state.getValue(DOWN)) ny = 0;
-        if (state.getValue(UP)) my = 1;
+
+        if (state.getValue(NORTH)) {
+            nz = 0;
+        }
+
+        if (state.getValue(SOUTH)) {
+            mz = 1;
+        }
+
+        if (state.getValue(WEST)) {
+            nx = 0;
+        }
+
+        if (state.getValue(EAST)) {
+            mx = 1;
+        }
+
+        if (state.getValue(DOWN)) {
+            ny = 0;
+        }
+
+        if (state.getValue(UP)) {
+            my = 1;
+        }
+
         return new AxisAlignedBB(nx, ny, nz, mx, my, mz);
     }
 
     @Override
-    public boolean hasTileEntity(IBlockState state)
-    {
+    public boolean hasTileEntity(IBlockState state) {
         return true;
     }
 
     @Override
-    public TileEntity createTileEntity(World world, IBlockState state)
-    {
-        return world.isRemote ?
-                new TilePipeClient() :
-                new TilePipe();
+    public TileEntity createTileEntity(World world, IBlockState state) {
+        return world.isRemote ? new TilePipeClient() : new TilePipe();
     }
 
     @Deprecated
     @Override
-    public boolean isOpaqueCube(IBlockState state)
-    {
+    public boolean isOpaqueCube(IBlockState state) {
         return false;
     }
 
     @Override
-    public int getMetaFromState(IBlockState state)
-    {
+    public int getMetaFromState(IBlockState state) {
         return 0;
     }
 
     @Deprecated
     @Override
-    public IBlockState getStateFromMeta(int meta)
-    {
+    public IBlockState getStateFromMeta(int meta) {
         return getDefaultState();
     }
 
     @Override
-    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos)
-    {
+    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
         IExtendedBlockState augmented = (IExtendedBlockState) super.getExtendedState(state, world, pos);
         TileEntity te = world.getTileEntity(pos);
-        if (te instanceof TilePipeClient)
-        {
+
+        if (te instanceof TilePipeClient) {
             TilePipeClient pipe = (TilePipeClient) te;
 
             augmented = augmented.withProperty(CONNECTORS, pipe.getConnectors());
@@ -160,8 +169,7 @@ public class BlockPipe extends BlockRegistered
 
     @Deprecated
     @Override
-    public IBlockState getActualState(IBlockState state, IBlockAccess worldIn, BlockPos pos)
-    {
+    public IBlockState getActualState(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
         return state
                 .withProperty(NORTH, isConnectable(worldIn, pos, EnumFacing.NORTH))
                 .withProperty(SOUTH, isConnectable(worldIn, pos, EnumFacing.SOUTH))
@@ -171,66 +179,65 @@ public class BlockPipe extends BlockRegistered
                 .withProperty(DOWN, isConnectable(worldIn, pos, EnumFacing.DOWN));
     }
 
-    private boolean isConnectable(IBlockAccess worldIn, BlockPos pos, EnumFacing facing)
-    {
+    private boolean isConnectable(IBlockAccess worldIn, BlockPos pos, EnumFacing facing) {
         TileEntity te = worldIn.getTileEntity(pos.offset(facing));
 
         return (te instanceof TilePipe) || (te instanceof TilePipeClient);
     }
 
     @Override
-    protected BlockStateContainer createBlockState()
-    {
+    protected BlockStateContainer createBlockState() {
         return new ExtendedBlockState(this, new IProperty[]{NORTH, SOUTH, WEST, EAST, UP, DOWN}, new IUnlistedProperty[]{CONNECTORS});
     }
 
     @Override
-    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos)
-    {
+    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
         super.neighborChanged(state, worldIn, pos, blockIn, fromPos);
+
         TileEntity te = worldIn.getTileEntity(pos);
-        if (te != null)
+
+        if (te != null) {
             te.markDirty();
+        }
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
-    {
+    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         TileEntity te = worldIn.getTileEntity(pos);
-        if (te instanceof TilePipe)
-        {
+
+        if (te instanceof TilePipe) {
             if (worldIn.isRemote)
                 return true;
 
             TilePipe pipe = (TilePipe) te;
 
-            if (pipe.addConnector(facing, ConnectorHandler.REGISTRY.getValue(ItemHandlerConnector.KEY).createInstance()))
-            {
+            if (pipe.addConnector(facing, ConnectorHandler.REGISTRY.getValue(ItemHandlerConnector.KEY).createInstance())) {
                 worldIn.notifyBlockUpdate(pos, state, state, 3);
             }
 
             return true;
         }
+
         return super.onBlockActivated(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }
 
     @Override
-    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor)
-    {
+    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
         super.onNeighborChange(world, pos, neighbor);
-        if (isUpdateSource(world, pos, fromNeighbour(pos, neighbor)))
+
+        if (isUpdateSource(world, pos, fromNeighbour(pos, neighbor))) {
             ((TilePipe) world.getTileEntity(pos)).broadcastDirty();
+        }
     }
 
-    private boolean isUpdateSource(IBlockAccess worldIn, BlockPos pos, EnumFacing facing)
-    {
+    private boolean isUpdateSource(IBlockAccess worldIn, BlockPos pos, EnumFacing facing) {
         //TileEntity te = worldIn.getTileEntity(pos.offset(facing));
         return false; //isAutomatable(te, facing.getOpposite());
     }
 
-    private EnumFacing fromNeighbour(BlockPos a, BlockPos b)
-    {
+    private EnumFacing fromNeighbour(BlockPos a, BlockPos b) {
         BlockPos diff = b.subtract(a);
+
         return EnumFacing.getFacingFromVector(diff.getX(), diff.getY(), diff.getZ());
     }
 }

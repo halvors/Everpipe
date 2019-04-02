@@ -3,8 +3,7 @@ package gigaherz.everpipe.pipe.connectors;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-public abstract class ConnectorState
-{
+public abstract class ConnectorState {
     private final ConnectorHandler connectorHandler;
 
     protected ConnectorState(ConnectorHandler handler)

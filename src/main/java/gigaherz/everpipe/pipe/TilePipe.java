@@ -21,10 +21,9 @@ import net.minecraftforge.common.util.Constants;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 
-public class TilePipe extends TileEntity implements ITickable, GraphObject
-{
+public class TilePipe extends TileEntity implements ITickable, GraphObject {
     private Graph graph;
     private boolean firstUpdate = true;
 
@@ -42,132 +41,127 @@ public class TilePipe extends TileEntity implements ITickable, GraphObject
 
     private final Multimap<EnumFacing, Connector> connectors = ArrayListMultimap.create();
 
-    public boolean addConnector(EnumFacing side, Connector connector)
-    {
+    public boolean addConnector(EnumFacing side, Connector connector) {
         Collection<Connector> bySide = connectors.get(side);
-        if (bySide.size() >= 9)
+
+        if (bySide.size() >= 9) {
             return false;
-        if (bySide.stream().anyMatch(c -> c.getConnectorHandler() == connector.getConnectorHandler()))
+        }
+
+        if (bySide.stream().anyMatch(c -> c.getConnectorHandler() == connector.getConnectorHandler())) {
             return false;
+        }
+
         connectors.put(side, connector);
+
         return true;
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing)
-    {
-        if (facing != null)
-        {
-            return connectors.get(facing).stream()
-                    .anyMatch(c -> c.hasCapability(capability, facing));
+    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+        if (facing != null) {
+            return connectors.get(facing).stream().anyMatch(c -> c.hasCapability(capability, facing));
         }
+
         return super.hasCapability(capability, facing);
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing)
-    {
-        if (facing != null)
-        {
+    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+        if (facing != null) {
             return connectors.get(facing).stream()
                     .filter(c -> c.hasCapability(capability, facing))
                     .findFirst().get()
                     .getCapability(capability, facing);
         }
+
         return super.getCapability(capability, facing);
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound)
-    {
-        super.readFromNBT(compound);
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
 
         connectors.clear();
-        NBTTagList list = compound.getTagList("Connectors", Constants.NBT.TAG_COMPOUND);
-        for (int i = 0; i < list.tagCount(); i++)
-        {
-            NBTTagCompound tag = list.getCompoundTagAt(i);
-            EnumFacing side = EnumFacing.byName(tag.getString("Side"));
+        NBTTagList list = tag.getTagList("Connectors", Constants.NBT.TAG_COMPOUND);
 
-            if (!tag.hasKey("Handler", Constants.NBT.TAG_STRING))
-            {
+        for (int i = 0; i < list.tagCount(); i++) {
+            NBTTagCompound currentTag = list.getCompoundTagAt(i);
+            EnumFacing side = EnumFacing.byName(currentTag.getString("Side"));
+
+            if (!currentTag.hasKey("Handler", Constants.NBT.TAG_STRING)) {
                 Everpipe.logger.warn("Ignored connector missing handler key.");
                 continue;
             }
-            ResourceLocation key = new ResourceLocation(tag.getString("Handler"));
+
+            ResourceLocation key = new ResourceLocation(currentTag.getString("Handler"));
             ConnectorHandler handler = ConnectorHandler.REGISTRY.getValue(key);
-            if (handler == null)
-            {
+
+            if (handler == null) {
                 Everpipe.logger.warn("Ignored unregistered connector handler: {0}", key);
                 continue;
             }
+
             Connector conn = handler.createInstance();
-            conn.deserializeNBT(tag);
+            conn.deserializeNBT(currentTag);
             connectors.put(side, conn);
         }
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound)
-    {
-        compound = super.writeToNBT(compound);
+    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
+        tag = super.writeToNBT(tag);
 
         NBTTagList list = new NBTTagList();
 
-        for (Map.Entry<EnumFacing, Connector> entry : connectors.entries())
-        {
-            NBTTagCompound tag = entry.getValue().serializeNBT();
+        for (Entry<EnumFacing, Connector> entry : connectors.entries()) {
+            NBTTagCompound currentTag = entry.getValue().serializeNBT();
 
-            tag.setString("Side", entry.getKey().getName());
+            currentTag.setString("Side", entry.getKey().getName());
 
-            list.appendTag(tag);
+            list.appendTag(currentTag);
         }
 
-        compound.setTag("Connectors", list);
-        return compound;
+        tag.setTag("Connectors", list);
+
+        return tag;
     }
 
     @Override
-    public NBTTagCompound getUpdateTag()
-    {
+    public NBTTagCompound getUpdateTag() {
         return writeToNBT(new NBTTagCompound());
     }
 
     @Nullable
     @Override
-    public SPacketUpdateTileEntity getUpdatePacket()
-    {
+    public SPacketUpdateTileEntity getUpdatePacket() {
         return new SPacketUpdateTileEntity(pos, 0, getUpdateTag());
     }
 
     @Override
-    public void validate()
-    {
+    public void validate() {
         super.validate();
 
-        if (!firstUpdate)
+        if (!firstUpdate) {
             init();
+        }
     }
 
     @Override
-    public void update()
-    {
-        if (firstUpdate)
-        {
+    public void update() {
+        if (firstUpdate) {
             firstUpdate = false;
             init();
         }
     }
 
-    private void init()
-    {
+    private void init() {
         Graph.integrate(this, getNeighbours());
         //updateConnectedInventories();
     }
 
     @Override
-    public void invalidate()
-    {
+    public void invalidate() {
         super.invalidate();
 
         Graph graph = this.getGraph();
@@ -175,45 +169,51 @@ public class TilePipe extends TileEntity implements ITickable, GraphObject
             graph.remove(this);
     }
 
-    private List<GraphObject> getNeighbours()
-    {
+    private List<GraphObject> getNeighbours() {
         List<GraphObject> neighbours = Lists.newArrayList();
-        for (EnumFacing f : EnumFacing.VALUES)
-        {
+
+        for (EnumFacing f : EnumFacing.VALUES) {
             TileEntity teOther = world.getTileEntity(pos.offset(f));
-            if (!(teOther instanceof TilePipe))
+
+            if (!(teOther instanceof TilePipe)) {
                 continue;
+            }
+
             GraphObject thingOther = ((TilePipe) teOther);
-            if (thingOther.getGraph() != null)
+
+            if (thingOther.getGraph() != null) {
                 neighbours.add(thingOther);
+            }
         }
+
         return neighbours;
     }
 
-    public void updateNeighbours()
-    {
+    public void updateNeighbours() {
         Graph graph = this.getGraph();
-        if (graph != null)
-        {
+
+        if (graph != null) {
             graph.addNeighours(this, getNeighbours());
         }
 
         //updateConnectedInventories();
     }
 
-    public void broadcastDirty()
-    {
-        if (getGraph() == null)
+    public void broadcastDirty() {
+        if (getGraph() == null) {
             return;
+        }
 
-        for (GraphObject object : getGraph().getObjects())
-        {
-            if (!(object instanceof TilePipe))
+        for (GraphObject object : getGraph().getObjects()) {
+            if (!(object instanceof TilePipe)) {
                 continue;
+            }
+
             TilePipe proxy = (TilePipe) object;
 
-            if (!proxy.isInvalid())
+            if (!proxy.isInvalid()) {
                 proxy.markDirty();
+            }
         }
     }
 }

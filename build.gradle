@@ -15,9 +15,10 @@ repositories {
     maven {
         url "http://dvs1.progwml6.com/files/maven"
     }
-    maven {
-        url 'http://maven.epoxide.xyz'
+    maven {  
+        url 'http://maven.mcmoddev.com'
     }
+
     maven {
         url 'http://dogforce-games.com/maven'
     }
@@ -30,10 +31,10 @@ group= "gigaherz.everpipe" // http://maven.apache.org/guides/mini/guide-naming-c
 archivesBaseName = "Everpipe"
 
 minecraft {
-    version = "1.12.1-14.22.0.2452"
+    version = "1.12.2-14.23.5.2768"
     runDir = "run"
 
-    mappings = "snapshot_20170801"
+    mappings = "stable_39"
 
     replace "@VERSION@", project.version
     replaceIn "Everpipe.java"

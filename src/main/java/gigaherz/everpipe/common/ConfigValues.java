@@ -3,9 +3,7 @@ package gigaherz.everpipe.common;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
-public class ConfigValues
-{
-
+public class ConfigValues {
     public static float PowerPerInsertionConstant;
     public static float PowerPerInsertionLinear;
     public static float PowerPerInsertionGeometric;
@@ -18,8 +16,7 @@ public class ConfigValues
 
     public static boolean EnableRudimentaryGenerator;
 
-    public static void readConfig(Configuration config)
-    {
+    public static void readConfig(Configuration config) {
         config.load();
 
         Property cfg = config.get("General", "PreferContainersWithExistingStacks", true);
